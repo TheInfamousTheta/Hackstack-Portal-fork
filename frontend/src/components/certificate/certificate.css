@@ -126,6 +126,12 @@
   color: #ffffff;
 }
 
+.hs-cert-btn-share.hs-cert-btn-share-error {
+  color: #f87171;
+  border-color: rgba(239, 68, 68, 0.4);
+  background: rgba(239, 68, 68, 0.1);
+}
+
 .hs-cert-btn-close {
   display: inline-flex;
   align-items: center;

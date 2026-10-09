@@ -5,7 +5,8 @@ const Module = require('../models/Module');
 const Progress = require('../models/Progress');
 const User = require('../models/User');
 
-const isValidObjectId = (value) => mongoose.Types.ObjectId.isValid(value);
+const isValidObjectId = (value) =>
+  typeof value === 'string' && /^[0-9a-fA-F]{24}$/.test(value);
 
 const generateUniqueCode = async () => {
   const year = new Date().getFullYear();
@@ -154,7 +155,12 @@ exports.verifyCertificate = async (req, res) => {
   const { certCode } = req.params;
 
   try {
-    if (!certCode || typeof certCode !== 'string') {
+    if (
+      !certCode ||
+      typeof certCode !== 'string' ||
+      certCode.trim().length === 0 ||
+      certCode.length > 50
+    ) {
       return res.status(400).json({ message: 'Invalid certificate code.' });
     }
 

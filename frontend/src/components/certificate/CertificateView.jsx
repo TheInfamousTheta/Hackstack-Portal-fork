@@ -11,17 +11,17 @@ export function CertificateView({ certificate, verificationUrl }) {
     issuedAt,
   } = certificate;
 
-  const formattedDate = issuedAt
-    ? new Date(issuedAt).toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      })
-    : new Date().toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      });
+  const formattedDate = (() => {
+    const parsed = issuedAt ? new Date(issuedAt) : new Date();
+    const validDate = !Number.isNaN(parsed.getTime()) ? parsed : new Date();
+    return validDate.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  })();
+
+  const logoSrc = `${(import.meta.env.BASE_URL || "/").replace(/\/+$/, "")}/swc-logo.webp`;
 
   return (
     <div className="hs-cert-container certificate-container" id="printable-certificate">
@@ -36,7 +36,7 @@ export function CertificateView({ certificate, verificationUrl }) {
           {/* Watermark */}
           <div className="hs-cert-watermark">
             <img
-              src={`${import.meta.env.BASE_URL}swc-logo.webp`}
+              src={logoSrc}
               alt="SWC IIT Guwahati watermark"
             />
           </div>
@@ -46,7 +46,7 @@ export function CertificateView({ certificate, verificationUrl }) {
             <header className="hs-cert-header">
               <div className="hs-cert-logo-badge">
                 <img
-                  src={`${import.meta.env.BASE_URL}swc-logo.webp`}
+                  src={logoSrc}
                   alt="SWC Logo"
                   className="hs-cert-logo-img"
                 />

@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { Check, Copy, Printer, X, Award, AlertCircle } from "lucide-react";
 import { CertificateView } from "./CertificateView";
 import { certificateService } from "../../services/certificateService";
@@ -9,6 +9,14 @@ export function CertificateModal({ isOpen, onClose, moduleId, moduleTitle, week 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
+  const [copyError, setCopyError] = useState(false);
+  const copyTimeoutRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     if (!isOpen || !moduleId) return;
@@ -40,17 +48,38 @@ export function CertificateModal({ isOpen, onClose, moduleId, moduleTitle, week 
     window.print();
   }, []);
 
-  const handleCopyLink = useCallback(() => {
+  const handleCopyLink = useCallback(async () => {
     if (!certificate?.certificateCode) return;
     const origin = window.location.origin;
     const baseUrl = import.meta.env.BASE_URL || "/";
     const cleanBase = baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`;
     const shareUrl = `${origin}${cleanBase}certificate/${certificate.certificateCode}`;
 
-    navigator.clipboard.writeText(shareUrl).then(() => {
+    if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+
+    try {
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(shareUrl);
+      } else {
+        const textarea = document.createElement("textarea");
+        textarea.value = shareUrl;
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+        const successful = document.execCommand("copy");
+        document.body.removeChild(textarea);
+        if (!successful) throw new Error("Copy command failed");
+      }
+      setCopyError(false);
       setCopied(true);
-      setTimeout(() => setCopied(false), 2500);
-    });
+      copyTimeoutRef.current = setTimeout(() => setCopied(false), 2500);
+    } catch {
+      setCopied(false);
+      setCopyError(true);
+      copyTimeoutRef.current = setTimeout(() => setCopyError(false), 3000);
+    }
   }, [certificate?.certificateCode]);
 
   // Handle ESC key
@@ -79,12 +108,17 @@ export function CertificateModal({ isOpen, onClose, moduleId, moduleTitle, week 
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="hs-cert-modal-card" role="dialog" aria-modal="true">
+      <div
+        className="hs-cert-modal-card"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="cert-modal-title"
+      >
         <div className="hs-cert-modal-header no-print">
           <div className="hs-cert-modal-header-copy">
             <Award size={22} className="text-amber-400" />
             <div>
-              <h3>Module Completion Certificate</h3>
+              <h3 id="cert-modal-title">Module Completion Certificate</h3>
               <span>{moduleTitle ? `${moduleTitle} · Week ${week || 1}` : "Official SWC Certificate"}</span>
             </div>
           </div>
@@ -94,12 +128,24 @@ export function CertificateModal({ isOpen, onClose, moduleId, moduleTitle, week 
               <>
                 <button
                   type="button"
-                  className="hs-cert-btn-share no-print"
+                  className={`hs-cert-btn-share no-print ${copyError ? "hs-cert-btn-share-error" : ""}`}
                   onClick={handleCopyLink}
-                  title="Copy permanent verification link"
+                  title={copyError ? "Could not copy link to clipboard" : "Copy permanent verification link"}
                 >
-                  {copied ? <Check size={15} /> : <Copy size={15} />}
-                  <span>{copied ? "Link Copied!" : "Share Link"}</span>
+                  {copied ? (
+                    <Check size={15} />
+                  ) : copyError ? (
+                    <AlertCircle size={15} />
+                  ) : (
+                    <Copy size={15} />
+                  )}
+                  <span>
+                    {copied
+                      ? "Link Copied!"
+                      : copyError
+                        ? "Copy Failed"
+                        : "Share Link"}
+                  </span>
                 </button>
 
                 <button

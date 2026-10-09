@@ -151,22 +151,22 @@ function ModuleDetail() {
     [moduleDays, resolvedQuizByDayId, completedSet],
   );
 
-  const completionPercent = useMemo(
-    () =>
-      module?.dayCount > 0
-        ? Math.round((completedSet.size / module.dayCount) * 100)
-        : 0,
-    [completedSet.size, module?.dayCount],
-  );
-
   const isModuleCompleted = useMemo(
     () =>
       Boolean(
-        progress?.moduleCompleted ||
-          (module?.dayCount > 0 && completedSet.size >= module.dayCount),
+        module?.dayCount > 0 &&
+          completedSet.size >= module.dayCount &&
+          (progress?.moduleCompleted || moduleDays.every((day) => completedSet.has(day.id))),
       ),
-    [progress?.moduleCompleted, module?.dayCount, completedSet.size],
+    [module?.dayCount, completedSet, progress?.moduleCompleted, moduleDays],
   );
+
+  const completionPercent = useMemo(() => {
+    if (!module?.dayCount || module.dayCount === 0) return 0;
+    if (isModuleCompleted) return 100;
+    const rawPercent = Math.round((completedSet.size / module.dayCount) * 100);
+    return Math.min(rawPercent, 99);
+  }, [module?.dayCount, completedSet.size, isModuleCompleted]);
 
   const finalTaskContent = useMemo(
     () =>

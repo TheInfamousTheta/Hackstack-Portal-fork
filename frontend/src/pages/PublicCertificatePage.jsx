@@ -13,20 +13,31 @@ export default function PublicCertificatePage() {
 
   useEffect(() => {
     if (!certCode) return;
+    let isMounted = true;
     setLoading(true);
     setError("");
 
     certificateService
       .verifyCertificate(certCode)
       .then((res) => {
-        setData(res.certificate);
+        if (!isMounted) return;
+        if (res?.certificate) {
+          setData(res.certificate);
+        } else {
+          setError("Certificate could not be verified.");
+        }
       })
       .catch((err) => {
+        if (!isMounted) return;
         setError(err.message || "Certificate could not be verified.");
       })
       .finally(() => {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       });
+
+    return () => {
+      isMounted = false;
+    };
   }, [certCode]);
 
   const handlePrint = useCallback(() => {

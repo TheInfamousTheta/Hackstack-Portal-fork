@@ -27,6 +27,8 @@ export function ModuleProgressCard({ row, index = 0 }) {
   } = row;
 
   const moduleTheme = getModuleTheme(slug);
+  const isFullyCompleted = totalDays > 0 && completedDays >= totalDays;
+  const displayPercent = isFullyCompleted ? 100 : Math.min(completionPercent, 99);
   const lastSynced = progressUpdatedAt
     ? new Date(progressUpdatedAt).toLocaleDateString()
     : "Awaiting first sync";
@@ -48,12 +50,12 @@ export function ModuleProgressCard({ row, index = 0 }) {
           <h3>{title}</h3>
         </div>
         <div className="dashboard-module-badge">
-          {completionPercent === 100 ? (
+          {isFullyCompleted ? (
             <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 700 }}>
               <CheckCircle2 size={15} /> Done
             </span>
           ) : (
-            `${completionPercent}%`
+            `${displayPercent}%`
           )}
         </div>
       </div>
@@ -65,14 +67,14 @@ export function ModuleProgressCard({ row, index = 0 }) {
           <span>{lastSynced}</span>
         </div>
 
-        {completionPercent === 100 ? (
+        {isFullyCompleted ? (
           <div className="dashboard-module-completed-badge">
             <CheckCircle2 size={16} />
             All days completed — module finished!
           </div>
         ) : (
           <div className="dashboard-module-progress">
-            <div style={{ width: `${completionPercent}%`, background: moduleTheme.button }} />
+            <div style={{ width: `${displayPercent}%`, background: moduleTheme.button }} />
           </div>
         )}
 
@@ -81,7 +83,7 @@ export function ModuleProgressCard({ row, index = 0 }) {
             icon={<CircleCheckBig size={15} />}
             label="Module progress"
             value={`${completedDays}/${totalDays}`}
-            detail={`${completionPercent}% complete`}
+            detail={`${displayPercent}% complete`}
           />
           <MiniStat
             icon={<BarChart3 size={15} />}
@@ -101,13 +103,13 @@ export function ModuleProgressCard({ row, index = 0 }) {
           <div>
             <strong>Next step</strong>
             <p>
-              {completionPercent === 100
+              {isFullyCompleted
                 ? "This module is finished. Review the final task or polish your submission."
                 : "Jump back into the next available day and keep your streak moving."}
             </p>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
-            {completionPercent === 100 ? (
+            {isFullyCompleted ? (
               <button
                 type="button"
                 onClick={() => setShowCertModal(true)}
