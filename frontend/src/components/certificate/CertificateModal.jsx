@@ -24,6 +24,7 @@ export function CertificateModal({ isOpen, onClose, moduleId, moduleTitle, week 
     let isMounted = true;
     setLoading(true);
     setError("");
+    setCertificate(null);
 
     certificateService
       .getModuleCertificate(moduleId)
@@ -57,10 +58,19 @@ export function CertificateModal({ isOpen, onClose, moduleId, moduleTitle, week 
 
     if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
 
-    try {
-      if (navigator?.clipboard?.writeText) {
+    let copiedSuccessfully = false;
+
+    if (navigator?.clipboard?.writeText) {
+      try {
         await navigator.clipboard.writeText(shareUrl);
-      } else {
+        copiedSuccessfully = true;
+      } catch {
+        // Fallback to execCommand below
+      }
+    }
+
+    if (!copiedSuccessfully) {
+      try {
         const textarea = document.createElement("textarea");
         textarea.value = shareUrl;
         textarea.style.position = "fixed";
@@ -70,17 +80,32 @@ export function CertificateModal({ isOpen, onClose, moduleId, moduleTitle, week 
         textarea.select();
         const successful = document.execCommand("copy");
         document.body.removeChild(textarea);
-        if (!successful) throw new Error("Copy command failed");
+        if (successful) copiedSuccessfully = true;
+      } catch {
+        // Fallback failed
       }
+    }
+
+    if (copiedSuccessfully) {
       setCopyError(false);
       setCopied(true);
       copyTimeoutRef.current = setTimeout(() => setCopied(false), 2500);
-    } catch {
+    } else {
       setCopied(false);
       setCopyError(true);
       copyTimeoutRef.current = setTimeout(() => setCopyError(false), 3000);
     }
   }, [certificate?.certificateCode]);
+
+  // Lock background scrolling when modal is open
+  useEffect(() => {
+    if (!isOpen) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [isOpen]);
 
   // Handle ESC key
   useEffect(() => {

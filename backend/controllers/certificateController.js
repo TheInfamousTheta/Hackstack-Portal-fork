@@ -1,5 +1,4 @@
 const crypto = require('crypto');
-const mongoose = require('mongoose');
 const Certificate = require('../models/Certificate');
 const Module = require('../models/Module');
 const Progress = require('../models/Progress');
@@ -134,11 +133,11 @@ exports.getOrIssueCertificate = async (req, res) => {
 
     return res.status(201).json({ certificate, newlyIssued: true });
   } catch (error) {
-    if (error.code === 11000) {
+    if (error.code === 11000 && targetModuleId) {
       // Race condition safety: if created concurrently, return existing
       const existingCert = await Certificate.findOne({
         userId: req.user._id,
-        ...(targetModuleId ? { moduleId: targetModuleId } : {})
+        moduleId: targetModuleId
       });
       if (existingCert) {
         return res.json({ certificate: existingCert, newlyIssued: false });
