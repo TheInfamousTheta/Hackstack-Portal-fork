@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ShieldCheck, AlertTriangle, ArrowLeft, Printer } from "lucide-react";
+import { ShieldCheck, AlertTriangle, ArrowLeft, Printer, Loader2 } from "lucide-react";
 import { CertificateView } from "../components/certificate/CertificateView";
 import { certificateService } from "../services/certificateService";
 import "../components/certificate/certificate.css";
@@ -37,7 +37,15 @@ export default function PublicCertificatePage() {
     <div className="hs-cert-public-page">
       <div className="hs-cert-public-banner no-print">
         <div className="hs-cert-public-badge">
-          {error ? (
+          {loading ? (
+            <>
+              <Loader2 size={24} className="animate-spin text-sky-400" />
+              <div>
+                <h4>Verifying Credential…</h4>
+                <p>Checking Hackstack certificate registry...</p>
+              </div>
+            </>
+          ) : error || !data ? (
             <>
               <AlertTriangle size={24} className="text-amber-500" />
               <div>
@@ -57,7 +65,7 @@ export default function PublicCertificatePage() {
         </div>
 
         <div className="flex items-center gap-3">
-          {data ? (
+          {!loading && data ? (
             <button
               type="button"
               onClick={handlePrint}

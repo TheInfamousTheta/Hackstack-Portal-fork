@@ -89,12 +89,12 @@ export function CertificateModal({ isOpen, onClose, moduleId, moduleTitle, week 
             </div>
           </div>
 
-          <div className="hs-cert-modal-actions">
+          <div className="hs-cert-modal-actions no-print">
             {certificate ? (
               <>
                 <button
                   type="button"
-                  className="hs-cert-btn-share"
+                  className="hs-cert-btn-share no-print"
                   onClick={handleCopyLink}
                   title="Copy permanent verification link"
                 >
@@ -104,7 +104,7 @@ export function CertificateModal({ isOpen, onClose, moduleId, moduleTitle, week 
 
                 <button
                   type="button"
-                  className="hs-cert-btn-print"
+                  className="hs-cert-btn-print no-print"
                   onClick={handlePrint}
                   title="Print or Save as PDF"
                 >
@@ -116,7 +116,7 @@ export function CertificateModal({ isOpen, onClose, moduleId, moduleTitle, week 
 
             <button
               type="button"
-              className="hs-cert-btn-close"
+              className="hs-cert-btn-close no-print"
               onClick={onClose}
               aria-label="Close certificate modal"
             >

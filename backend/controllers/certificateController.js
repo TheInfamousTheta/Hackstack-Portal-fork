@@ -11,21 +11,23 @@ const generateUniqueCode = async () => {
   const year = new Date().getFullYear();
   let attempts = 0;
   while (attempts < 5) {
-    const code = `HS-${year}-${crypto.randomBytes(3).toString('hex').toUpperCase()}`;
+    const rand = crypto.randomBytes(5).toString('hex').toUpperCase();
+    const code = `HS-${year}-${rand}`;
     const exists = await Certificate.findOne({ certificateCode: code }).select('_id');
     if (!exists) return code;
     attempts += 1;
   }
-  return `HS-${year}-${Date.now().toString(36).slice(-6).toUpperCase()}`;
+  return `HS-${year}-${crypto.randomBytes(8).toString('hex').toUpperCase()}`;
 };
 
 exports.getOrIssueCertificate = async (req, res) => {
   const { moduleId } = req.params;
+  let targetModuleId = isValidObjectId(moduleId) ? moduleId : null;
 
   try {
     let moduleDoc = null;
-    if (isValidObjectId(moduleId)) {
-      moduleDoc = await Module.findById(moduleId);
+    if (targetModuleId) {
+      moduleDoc = await Module.findById(targetModuleId);
     }
     if (!moduleDoc) {
       moduleDoc = await Module.findOne({ slug: moduleId });
@@ -35,10 +37,12 @@ exports.getOrIssueCertificate = async (req, res) => {
       return res.status(404).json({ message: 'Module not found.' });
     }
 
+    targetModuleId = moduleDoc._id;
+
     // Check if certificate already exists
     const existingCert = await Certificate.findOne({
       userId: req.user._id,
-      moduleId: moduleDoc._id
+      moduleId: targetModuleId
     });
 
     if (existingCert) {
@@ -65,7 +69,7 @@ exports.getOrIssueCertificate = async (req, res) => {
     // Check student progress
     const progress = await Progress.findOne({
       userId: req.user._id,
-      moduleId: moduleDoc._id
+      moduleId: targetModuleId
     });
 
     if (!progress) {
@@ -92,18 +96,40 @@ exports.getOrIssueCertificate = async (req, res) => {
       (userDoc?.email ? userDoc.email.split('@')[0] : '') ||
       'Learner';
 
-    const certificateCode = await generateUniqueCode();
-
-    const certificate = await Certificate.create({
-      certificateCode,
-      userId: req.user._id,
-      moduleId: moduleDoc._id,
-      recipientName,
-      moduleTitle: moduleDoc.title,
-      moduleSlug: moduleDoc.slug,
-      week: moduleDoc.week || 1,
-      issuedAt: progress.updatedAt || new Date()
-    });
+    let certificate = null;
+    let createAttempts = 0;
+    while (createAttempts < 5) {
+      try {
+        const certificateCode = await generateUniqueCode();
+        certificate = await Certificate.create({
+          certificateCode,
+          userId: req.user._id,
+          moduleId: targetModuleId,
+          recipientName,
+          moduleTitle: moduleDoc.title,
+          moduleSlug: moduleDoc.slug,
+          week: moduleDoc.week || 1,
+          issuedAt: new Date()
+        });
+        break;
+      } catch (err) {
+        if (err.code === 11000) {
+          // If collision is on { userId, moduleId }, return existing
+          const existingCert = await Certificate.findOne({
+            userId: req.user._id,
+            moduleId: targetModuleId
+          });
+          if (existingCert) {
+            return res.json({ certificate: existingCert, newlyIssued: false });
+          }
+          // Unique index collision on certificateCode -> retry loop
+          createAttempts += 1;
+          if (createAttempts >= 5) throw err;
+        } else {
+          throw err;
+        }
+      }
+    }
 
     return res.status(201).json({ certificate, newlyIssued: true });
   } catch (error) {
@@ -111,7 +137,7 @@ exports.getOrIssueCertificate = async (req, res) => {
       // Race condition safety: if created concurrently, return existing
       const existingCert = await Certificate.findOne({
         userId: req.user._id,
-        moduleId: isValidObjectId(moduleId) ? moduleId : undefined
+        ...(targetModuleId ? { moduleId: targetModuleId } : {})
       });
       if (existingCert) {
         return res.json({ certificate: existingCert, newlyIssued: false });

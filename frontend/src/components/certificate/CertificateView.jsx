@@ -24,7 +24,7 @@ export function CertificateView({ certificate, verificationUrl }) {
       });
 
   return (
-    <div className="hs-cert-container" id="printable-certificate">
+    <div className="hs-cert-container certificate-container" id="printable-certificate">
       <div className="hs-cert-border-outer">
         <div className="hs-cert-border-inner">
           {/* Corner Decors */}
