@@ -269,6 +269,13 @@ VITE_API_URL=http://localhost:5000/api
 | GET | `/api/progress/:id` | Get progress record | ❌ |
 | PATCH | `/api/progress/:id` | Update progress | ✅ |
 
+### Certificate Endpoints
+
+| Method | Endpoint | Description | Auth Required |
+|--------|----------|-------------|:-------------:|
+| GET | `/api/certificates/module/:moduleId` | Get or issue certificate for completed module | ✅ |
+| GET | `/api/certificates/verify/:certCode` | Public certificate verification by unique code | ❌ |
+
 ### User Endpoints
 
 | Method | Endpoint | Description | Auth Required |
