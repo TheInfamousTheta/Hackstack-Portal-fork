@@ -1,0 +1,621 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   Certificate Component Styling & Print Engine
+   Supports: Modal preview, Public verification page, and Clean Print-to-PDF
+   ───────────────────────────────────────────────────────────────────────────── */
+
+:root {
+  --cert-bg: #0b1120;
+  --cert-bg-inner: #0f172a;
+  --cert-gold: #f59e0b;
+  --cert-gold-light: #fbbf24;
+  --cert-cyan: #38bdf8;
+  --cert-border: #334155;
+  --cert-text-main: #f8fafc;
+  --cert-text-muted: #94a3b8;
+}
+
+/* Modal Shell */
+.hs-cert-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(2, 6, 23, 0.85);
+  backdrop-filter: blur(8px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  overflow-y: auto;
+}
+
+.hs-cert-modal-card {
+  background: #090d16;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 1060px;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 30px rgba(56, 189, 248, 0.1);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: certModalPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes certModalPop {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.hs-cert-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(15, 23, 42, 0.6);
+}
+
+.hs-cert-modal-header-copy {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.hs-cert-modal-header-copy h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.hs-cert-modal-header-copy span {
+  font-size: 0.85rem;
+  color: #94a3b8;
+}
+
+.hs-cert-modal-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.hs-cert-btn-print {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 1.1rem;
+  background: linear-gradient(135deg, #0284c7, #2563eb);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+}
+
+.hs-cert-btn-print:hover {
+  background: linear-gradient(135deg, #0369a1, #1d4ed8);
+  transform: translateY(-1px);
+}
+
+.hs-cert-btn-share {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  color: #cbd5e1;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.hs-cert-btn-share:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.hs-cert-btn-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: transparent;
+  color: #94a3b8;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.hs-cert-btn-close:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+.hs-cert-modal-body {
+  padding: 1.5rem;
+  overflow-x: auto;
+  background: #050811;
+  display: flex;
+  justify-content: center;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Certificate Layout Box
+   ───────────────────────────────────────────────────────────────────────────── */
+.hs-cert-container {
+  width: 100%;
+  max-width: 960px;
+  aspect-ratio: 1.414 / 1;
+  min-height: 580px;
+  background: #080e1a;
+  padding: 16px;
+  box-sizing: border-box;
+  position: relative;
+  border-radius: 8px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+}
+
+.hs-cert-border-outer {
+  border: 2px solid #334155;
+  outline: 1px dashed rgba(245, 158, 11, 0.4);
+  outline-offset: -6px;
+  padding: 12px;
+  height: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.hs-cert-border-inner {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  height: 100%;
+  position: relative;
+  padding: 24px 36px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: radial-gradient(circle at center, #0f172a 0%, #070d18 100%);
+  overflow: hidden;
+}
+
+/* Corner Ornaments */
+.hs-cert-corner {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--cert-gold);
+  pointer-events: none;
+}
+.hs-cert-corner-tl { top: 6px; left: 6px; border-right: none; border-bottom: none; }
+.hs-cert-corner-tr { top: 6px; right: 6px; border-left: none; border-bottom: none; }
+.hs-cert-corner-bl { bottom: 6px; left: 6px; border-right: none; border-top: none; }
+.hs-cert-corner-br { bottom: 6px; right: 6px; border-left: none; border-top: none; }
+
+/* Watermark */
+.hs-cert-watermark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0.04;
+  pointer-events: none;
+  width: 320px;
+  height: 320px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.hs-cert-watermark img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: grayscale(100%);
+}
+
+.hs-cert-content {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  text-align: center;
+}
+
+/* Header */
+.hs-cert-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.hs-cert-logo-img {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.4));
+}
+
+.hs-cert-authority-text {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.hs-cert-org {
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  color: #f1f5f9;
+  text-transform: uppercase;
+}
+
+.hs-cert-inst {
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  color: var(--cert-gold);
+  font-weight: 600;
+}
+
+/* Titles */
+.hs-cert-title-section {
+  margin: 12px 0 6px 0;
+}
+
+.hs-cert-title {
+  font-size: clamp(1.4rem, 2.4vw, 2.1rem);
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  color: #ffffff;
+  margin: 0;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+  font-family: inherit;
+}
+
+.hs-cert-subtitle {
+  font-size: 0.8rem;
+  letter-spacing: 0.22em;
+  color: var(--cert-cyan);
+  margin: 4px 0 0 0;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+/* Statement */
+.hs-cert-statement {
+  margin: 6px 0;
+}
+
+.hs-cert-label {
+  font-size: 0.85rem;
+  color: var(--cert-text-muted);
+  font-style: italic;
+  margin: 0 0 4px 0;
+}
+
+.hs-cert-recipient {
+  font-size: clamp(1.5rem, 2.8vw, 2.4rem);
+  font-weight: 800;
+  color: var(--cert-gold-light);
+  margin: 4px 0 8px 0;
+  letter-spacing: 0.02em;
+  text-shadow: 0 2px 12px rgba(245, 158, 11, 0.2);
+}
+
+.hs-cert-divider {
+  width: 140px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--cert-gold), transparent);
+  margin: 0 auto 10px auto;
+}
+
+.hs-cert-text {
+  font-size: clamp(0.75rem, 1.1vw, 0.9rem);
+  color: #cbd5e1;
+  max-width: 650px;
+  margin: 0 auto 6px auto;
+  line-height: 1.5;
+}
+
+.hs-cert-module {
+  font-size: clamp(1.05rem, 1.8vw, 1.45rem);
+  font-weight: 700;
+  color: #ffffff;
+  margin: 4px 0 0 0;
+}
+
+.hs-cert-module-week {
+  color: var(--cert-cyan);
+  font-weight: 600;
+}
+
+/* Footer Section */
+.hs-cert-footer {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.hs-cert-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+}
+
+.hs-cert-meta-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.hs-cert-meta-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.hs-cert-meta-val {
+  font-size: 0.8rem;
+  color: #e2e8f0;
+  font-weight: 500;
+}
+
+.hs-cert-code {
+  font-family: monospace;
+  font-weight: 700;
+  color: var(--cert-gold-light);
+  letter-spacing: 0.05em;
+}
+
+.hs-cert-verification-chip {
+  flex-direction: row;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  color: #38bdf8;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+/* Center Seal */
+.hs-cert-badge-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hs-cert-seal {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: 2px dashed var(--cert-gold);
+  background: radial-gradient(circle, rgba(245, 158, 11, 0.15) 0%, transparent 80%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--cert-gold-light);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+}
+
+.hs-cert-seal-icon {
+  margin-bottom: 2px;
+}
+
+/* Signatures */
+.hs-cert-signatures {
+  display: flex;
+  gap: 32px;
+  text-align: center;
+}
+
+.hs-cert-sign-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 160px;
+}
+
+.hs-cert-sign-line {
+  width: 140px;
+  height: 1px;
+  background: #475569;
+  margin-bottom: 6px;
+}
+
+.hs-cert-sign-name {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #f1f5f9;
+}
+
+.hs-cert-sign-title {
+  font-size: 0.65rem;
+  color: #94a3b8;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Public Verification Page Styles
+   ───────────────────────────────────────────────────────────────────────────── */
+.hs-cert-public-page {
+  min-height: 100vh;
+  background: #030712;
+  color: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem 1rem;
+}
+
+.hs-cert-public-banner {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-radius: 12px;
+  padding: 0.85rem 1.5rem;
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 960px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.hs-cert-public-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.hs-cert-public-badge-icon {
+  color: #10b981;
+}
+
+.hs-cert-public-badge h4 {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.hs-cert-public-badge p {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Mobile Responsiveness
+   ───────────────────────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .hs-cert-container {
+    aspect-ratio: auto;
+    min-height: auto;
+    padding: 10px;
+  }
+
+  .hs-cert-border-inner {
+    padding: 18px 14px;
+  }
+
+  .hs-cert-header {
+    flex-direction: column;
+    gap: 8px;
+    text-align: center;
+  }
+
+  .hs-cert-authority-text {
+    text-align: center;
+  }
+
+  .hs-cert-footer {
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .hs-cert-meta {
+    text-align: center;
+    align-items: center;
+  }
+
+  .hs-cert-signatures {
+    flex-direction: column;
+    gap: 14px;
+    width: 100%;
+  }
+
+  .hs-cert-modal-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .hs-cert-modal-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   PRINT-TO-PDF STYLESHEET (WINDOW.PRINT)
+   ───────────────────────────────────────────────────────────────────────────── */
+@media print {
+  @page {
+    size: landscape;
+    margin: 0;
+  }
+
+  /* Hide entire portal UI chrome when printing */
+  body * {
+    visibility: hidden;
+  }
+
+  body, html {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #080e1a !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Show only the printable certificate */
+  #printable-certificate,
+  #printable-certificate * {
+    visibility: visible;
+  }
+
+  #printable-certificate {
+    position: fixed !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    max-width: 100vw !important;
+    margin: 0 !important;
+    padding: 24px !important;
+    box-sizing: border-box !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: #080e1a !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  .no-print,
+  .hs-cert-modal-header,
+  .hs-cert-modal-overlay,
+  .hs-cert-public-banner,
+  nav,
+  header:not(.hs-cert-header),
+  footer:not(.hs-cert-footer) {
+    display: none !important;
+  }
+}

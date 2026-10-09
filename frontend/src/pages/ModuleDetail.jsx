@@ -2,6 +2,7 @@ import { useMemo, useState, useCallback } from "react";
 import {
   ArrowLeft,
   ArrowUpRight,
+  Award,
   CheckCircle2,
   ClipboardCheck,
   PlayCircle,
@@ -9,6 +10,7 @@ import {
 } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import { DayModal } from "../components/DayModal";
+import { CertificateModal } from "../components/certificate/CertificateModal";
 import { Markdown } from "../components/Markdown";
 import { useAuth } from "../context/AuthContext";
 import { useModules } from "../context/ModulesContext";
@@ -41,6 +43,7 @@ function ModuleDetail() {
   const [openDayId, setOpenDayId] = useState(null);
   const [actionError, setActionError] = useState("");
   const [pendingDayId, setPendingDayId] = useState("");
+  const [isCertOpen, setIsCertOpen] = useState(false);
 
   const isRegistered = module ? registeredModuleIds.includes(module.id) : false;
   const moduleDays = module?.days || [];
@@ -154,6 +157,15 @@ function ModuleDetail() {
         ? Math.round((completedSet.size / module.dayCount) * 100)
         : 0,
     [completedSet.size, module?.dayCount],
+  );
+
+  const isModuleCompleted = useMemo(
+    () =>
+      Boolean(
+        progress?.moduleCompleted ||
+          (module?.dayCount > 0 && completedSet.size >= module.dayCount),
+      ),
+    [progress?.moduleCompleted, module?.dayCount, completedSet.size],
   );
 
   const finalTaskContent = useMemo(
@@ -290,6 +302,16 @@ function ModuleDetail() {
             <div style={{ width: `${completionPercent}%` }} />
           </div>
           <div className="module-detail-hero-actions">
+            {isModuleCompleted ? (
+              <button
+                type="button"
+                onClick={() => setIsCertOpen(true)}
+                className="module-certificate-action"
+              >
+                <Award size={16} />
+                View Certificate
+              </button>
+            ) : null}
             <Link to="/dashboard" className="module-secondary-action">
               View full results
             </Link>
@@ -432,6 +454,14 @@ function ModuleDetail() {
           onComplete={handleDayAction}
         />
       ) : null}
+
+      <CertificateModal
+        isOpen={isCertOpen}
+        onClose={() => setIsCertOpen(false)}
+        moduleId={module.id || module._id}
+        moduleTitle={module.title}
+        week={module.week}
+      />
     </div>
   );
 }

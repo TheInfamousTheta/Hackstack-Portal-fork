@@ -15,6 +15,7 @@ const adminRoutes = require("./routes/adminRoutes");
 const authRoutes = require("./routes/authRoutes"); // Required for the login flow
 const dashboardRoutes = require("./routes/dashboardRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
+const certificateRoutes = require("./routes/certificateRoutes");
 
 const app = express();
 
@@ -60,6 +61,7 @@ app.use("/admin", adminRoutes);
 app.use("/auth", authRoutes);
 app.use("/dashboard", dashboardRoutes);
 app.use("/notifications", notificationRoutes);
+app.use("/certificates", certificateRoutes);
 
 // Mount EJS Whitelist routes
 const whitelistRoutes = require("./routes/whitelistRoutes");

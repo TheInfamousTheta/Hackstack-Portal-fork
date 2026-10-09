@@ -431,6 +431,27 @@
   font-size: 13px;
 }
 
+.dashboard-module-cert-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  color: #ffffff;
+  white-space: nowrap;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dashboard-module-cert-link:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);
+}
+
 /* ── Profile Section ────────────────────────────────────────────── */
 .dashboard-profile-card {
   display: grid;

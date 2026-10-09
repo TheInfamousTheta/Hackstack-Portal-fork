@@ -259,6 +259,26 @@
   box-shadow: 0 8px 24px color-mix(in srgb, var(--module-accent) 20%, transparent);
 }
 
+.module-certificate-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 10px 16px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #ffffff;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(245, 158, 11, 0.3);
+  transition: all 0.2s ease;
+}
+
+.module-certificate-action:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 28px rgba(245, 158, 11, 0.4);
+}
+
 .module-primary-button:disabled {
   opacity: 0.6;
 }

@@ -1,10 +1,15 @@
-import { ArrowUpRight, BarChart3, CircleCheckBig, Target, CheckCircle2 } from "lucide-react";
+import { useState } from "react";
+import { ArrowUpRight, BarChart3, CircleCheckBig, Target, CheckCircle2, Award } from "lucide-react";
 import { Link } from "react-router-dom";
 import { getModuleTheme } from "../../utils/moduleAdapter";
+import { CertificateModal } from "../certificate/CertificateModal";
 import "./dashboard.css";
 
 export function ModuleProgressCard({ row, index = 0 }) {
+  const [showCertModal, setShowCertModal] = useState(false);
+
   const {
+    id,
     slug,
     title,
     description,
@@ -101,14 +106,35 @@ export function ModuleProgressCard({ row, index = 0 }) {
                 : "Jump back into the next available day and keep your streak moving."}
             </p>
           </div>
-          {slug ? (
-            <Link to={`/modules/${slug}`} className="dashboard-module-link">
-              Open module
-              <ArrowUpRight size={16} />
-            </Link>
-          ) : null}
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+            {completionPercent === 100 ? (
+              <button
+                type="button"
+                onClick={() => setShowCertModal(true)}
+                className="dashboard-module-cert-link"
+                title="View & Download Completion Certificate"
+              >
+                <Award size={15} />
+                Certificate
+              </button>
+            ) : null}
+            {slug ? (
+              <Link to={`/modules/${slug}`} className="dashboard-module-link">
+                Open module
+                <ArrowUpRight size={16} />
+              </Link>
+            ) : null}
+          </div>
         </div>
       </div>
+
+      <CertificateModal
+        isOpen={showCertModal}
+        onClose={() => setShowCertModal(false)}
+        moduleId={id}
+        moduleTitle={title}
+        week={week ?? index + 1}
+      />
     </article>
   );
 }

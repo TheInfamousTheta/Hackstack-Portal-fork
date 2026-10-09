@@ -18,6 +18,7 @@ import ModuleDetail from "./pages/ModuleDetail";
 import Leaderboard from "./pages/Leaderboard";
 import Onboarding from "./pages/Onboarding";
 import Login from "./pages/Login";
+import PublicCertificatePage from "./pages/PublicCertificatePage";
 
 // ── Admin imports ─────────────────────────────────────────────────────────────
 import AdminLogin from "../adminportal/admin-login";
@@ -153,6 +154,7 @@ const App = () => {
             <Route path="/login" element={<Login />} />
             <Route path="/auth-callback" element={<AuthCallback />} />
             <Route path="/onboarding" element={<Onboarding />} />
+            <Route path="/certificate/:certCode" element={<PublicCertificatePage />} />
 
             <Route
               path="/dashboard"
