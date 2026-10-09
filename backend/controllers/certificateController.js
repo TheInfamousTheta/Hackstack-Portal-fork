@@ -11,13 +11,13 @@ const generateUniqueCode = async () => {
   const year = new Date().getFullYear();
   let attempts = 0;
   while (attempts < 5) {
-    const rand = crypto.randomBytes(5).toString('hex').toUpperCase();
+    const rand = crypto.randomBytes(8).toString('hex').toUpperCase();
     const code = `HS-${year}-${rand}`;
     const exists = await Certificate.findOne({ certificateCode: code }).select('_id');
     if (!exists) return code;
     attempts += 1;
   }
-  return `HS-${year}-${crypto.randomBytes(8).toString('hex').toUpperCase()}`;
+  return `HS-${year}-${crypto.randomBytes(12).toString('hex').toUpperCase()}`;
 };
 
 exports.getOrIssueCertificate = async (req, res) => {
@@ -80,7 +80,7 @@ exports.getOrIssueCertificate = async (req, res) => {
 
     const completedDayIds = new Set((progress.completedDays || []).map((id) => id.toString()));
     const allDaysCompleted = allDayIds.every((id) => completedDayIds.has(id));
-    const isEligible = allDaysCompleted || (progress.moduleCompleted && completedDayIds.size >= totalDays);
+    const isEligible = allDaysCompleted;
 
     if (!isEligible) {
       return res.status(403).json({

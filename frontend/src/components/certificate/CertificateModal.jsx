@@ -97,13 +97,15 @@ export function CertificateModal({ isOpen, onClose, moduleId, moduleTitle, week 
     }
   }, [certificate?.certificateCode]);
 
-  // Lock background scrolling when modal is open
+  // Lock background scrolling and tag body for certificate print engine when modal is open
   useEffect(() => {
     if (!isOpen) return;
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+    document.body.classList.add("has-certificate");
     return () => {
       document.body.style.overflow = prevOverflow;
+      document.body.classList.remove("has-certificate");
     };
   }, [isOpen]);
 

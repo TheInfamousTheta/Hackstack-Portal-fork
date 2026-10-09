@@ -10,12 +10,14 @@ export default function PublicCertificatePage() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [isNotFound, setIsNotFound] = useState(false);
 
   useEffect(() => {
     if (!certCode) return;
     let isMounted = true;
     setLoading(true);
     setError("");
+    setIsNotFound(false);
 
     certificateService
       .verifyCertificate(certCode)
@@ -24,12 +26,19 @@ export default function PublicCertificatePage() {
         if (res?.certificate) {
           setData(res.certificate);
         } else {
+          setIsNotFound(true);
           setError("Certificate could not be verified.");
         }
       })
       .catch((err) => {
         if (!isMounted) return;
-        setError(err.message || "Certificate could not be verified.");
+        const notFound = err.status === 404 || err.status === 400;
+        setIsNotFound(notFound);
+        setError(
+          notFound
+            ? "This certificate ID is not recognized in the Hackstack registry."
+            : err.message || "Failed to reach Hackstack certificate registry. Please try again later."
+        );
       })
       .finally(() => {
         if (isMounted) setLoading(false);
@@ -39,6 +48,13 @@ export default function PublicCertificatePage() {
       isMounted = false;
     };
   }, [certCode]);
+
+  useEffect(() => {
+    document.body.classList.add("has-certificate");
+    return () => {
+      document.body.classList.remove("has-certificate");
+    };
+  }, []);
 
   const handlePrint = useCallback(() => {
     window.print();
@@ -58,10 +74,14 @@ export default function PublicCertificatePage() {
             </>
           ) : error || !data ? (
             <>
-              <AlertTriangle size={24} className="text-amber-500" />
+              <AlertTriangle size={24} className={isNotFound ? "text-amber-500" : "text-rose-500"} />
               <div>
-                <h4>Unverified Credential</h4>
-                <p>This certificate ID is not recognized in the Hackstack registry.</p>
+                <h4>{isNotFound ? "Unverified Credential" : "Verification Service Unavailable"}</h4>
+                <p>
+                  {isNotFound
+                    ? "This certificate ID is not recognized in the Hackstack registry."
+                    : "Unable to verify credential due to a network or server issue."}
+                </p>
               </div>
             </>
           ) : (
@@ -102,8 +122,10 @@ export default function PublicCertificatePage() {
         </div>
       ) : error ? (
         <div className="p-12 text-center text-rose-400 bg-slate-900 border border-slate-800 rounded-xl max-w-md flex flex-col items-center gap-3">
-          <AlertTriangle size={36} className="text-amber-400" />
-          <h3 className="text-lg font-bold text-white">Certificate Not Found</h3>
+          <AlertTriangle size={36} className={isNotFound ? "text-amber-400" : "text-rose-400"} />
+          <h3 className="text-lg font-bold text-white">
+            {isNotFound ? "Certificate Not Found" : "Verification Error"}
+          </h3>
           <p className="text-sm text-slate-400">{error}</p>
           <Link
             to="/"

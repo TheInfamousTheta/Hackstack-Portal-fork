@@ -572,6 +572,7 @@
 
 /* ─────────────────────────────────────────────────────────────────────────────
    PRINT-TO-PDF STYLESHEET (WINDOW.PRINT)
+   Scoped to certificate views so general application printing is unaffected
    ───────────────────────────────────────────────────────────────────────────── */
 @media print {
   @page {
@@ -579,12 +580,10 @@
     margin: 0;
   }
 
-  /* Hide entire portal UI chrome when printing */
-  body * {
-    visibility: hidden;
-  }
-
-  body, html {
+  body:has(#printable-certificate),
+  body.has-certificate,
+  html:has(#printable-certificate),
+  html.has-certificate {
     margin: 0 !important;
     padding: 0 !important;
     width: 100% !important;
@@ -595,10 +594,19 @@
     print-color-adjust: exact !important;
   }
 
+  /* Hide entire portal UI chrome ONLY when printing certificate */
+  body:has(#printable-certificate) *,
+  body.has-certificate * {
+    visibility: hidden;
+  }
+
   /* Neutralize modal wrapper and backdrop so they do not clip or suppress child elements */
-  .hs-cert-modal-overlay,
-  .hs-cert-modal-card,
-  .hs-cert-modal-body,
+  body:has(#printable-certificate) .hs-cert-modal-overlay,
+  body:has(#printable-certificate) .hs-cert-modal-card,
+  body:has(#printable-certificate) .hs-cert-modal-body,
+  body.has-certificate .hs-cert-modal-overlay,
+  body.has-certificate .hs-cert-modal-card,
+  body.has-certificate .hs-cert-modal-body,
   .modal-backdrop,
   [class*="modal-backdrop"] {
     position: static !important;
@@ -622,37 +630,49 @@
   }
 
   /* Explicitly hide non-certificate modal chrome and external site chrome */
-  .no-print,
-  .hs-cert-modal-header,
-  .hs-cert-modal-header *,
-  .hs-cert-modal-actions,
-  .hs-cert-modal-actions *,
-  .hs-cert-btn-close,
-  .hs-cert-btn-print,
-  .hs-cert-btn-share,
-  .hs-cert-public-banner,
-  .hs-cert-public-banner *,
-  .certificate-close,
-  .certificate-actions,
-  nav,
-  header:not(.hs-cert-header),
-  footer:not(.hs-cert-footer) {
+  body:has(#printable-certificate) .no-print,
+  body:has(#printable-certificate) .hs-cert-modal-header,
+  body:has(#printable-certificate) .hs-cert-modal-header *,
+  body:has(#printable-certificate) .hs-cert-modal-actions,
+  body:has(#printable-certificate) .hs-cert-modal-actions *,
+  body:has(#printable-certificate) .hs-cert-btn-close,
+  body:has(#printable-certificate) .hs-cert-btn-print,
+  body:has(#printable-certificate) .hs-cert-btn-share,
+  body:has(#printable-certificate) .hs-cert-public-banner,
+  body:has(#printable-certificate) .hs-cert-public-banner *,
+  body.has-certificate .no-print,
+  body.has-certificate .hs-cert-modal-header,
+  body.has-certificate .hs-cert-modal-header *,
+  body.has-certificate .hs-cert-modal-actions,
+  body.has-certificate .hs-cert-modal-actions *,
+  body.has-certificate .hs-cert-btn-close,
+  body.has-certificate .hs-cert-btn-print,
+  body.has-certificate .hs-cert-btn-share,
+  body.has-certificate .hs-cert-public-banner,
+  body.has-certificate .hs-cert-public-banner * {
     display: none !important;
   }
 
   /* Show only the printable certificate container */
-  .hs-cert-container,
-  .hs-cert-container *,
-  .certificate-container,
-  .certificate-container *,
-  #printable-certificate,
-  #printable-certificate * {
+  body:has(#printable-certificate) .hs-cert-container,
+  body:has(#printable-certificate) .hs-cert-container *,
+  body:has(#printable-certificate) .certificate-container,
+  body:has(#printable-certificate) .certificate-container *,
+  body:has(#printable-certificate) #printable-certificate,
+  body:has(#printable-certificate) #printable-certificate *,
+  body.has-certificate .hs-cert-container,
+  body.has-certificate .hs-cert-container *,
+  body.has-certificate .certificate-container,
+  body.has-certificate .certificate-container *,
+  body.has-certificate #printable-certificate,
+  body.has-certificate #printable-certificate * {
     visibility: visible !important;
   }
 
-  .hs-cert-container,
-  .certificate-container,
-  #printable-certificate {
+  body:has(#printable-certificate) #printable-certificate,
+  body.has-certificate #printable-certificate,
+  body:has(#printable-certificate) .hs-cert-container,
+  body.has-certificate .hs-cert-container {
     position: absolute !important;
     left: 0 !important;
     top: 0 !important;

@@ -18,7 +18,9 @@ export const certificateService = {
       const response = await apiClient.get(`/certificates/verify/${certCode}`);
       return response.data;
     } catch (error) {
-      throw new Error(getErrorMessage(error, 'Failed to verify certificate.'));
+      const err = new Error(getErrorMessage(error, 'Failed to verify certificate.'));
+      err.status = error.response?.status;
+      throw err;
     }
   },
 };
